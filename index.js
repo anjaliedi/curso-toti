@@ -14,15 +14,17 @@ app.get('/tasks', async (req, res) => {
   
   const tasksall = await tasks.findAll()
 
-  res.json(tasksall)
+  res.json({"lista de tarefas": tasksall})
 })
 
 // Create task
 app.post('/tasks', async (req, res) => {
   const body = req.body
-  await tasks.create(body)
-  
-  res.json(body)
+  if (Object.keys(body).length != 0){
+    await tasks.create(body)
+    res.json({"Foi inserida nova tarefa":body})
+  } else
+  res.send("Não foi criado porque deve enviar pelo menos alguma informação")
 })
 
 // Show task
@@ -39,17 +41,26 @@ app.put('/tasks/:id', async (req, res) => {
   const taskId = req.params.id
   const pasts = req.body
   const pert = await tasks.findByPk(taskId)
-  pert.update(pasts)
+  if (pert){
+    pert.update(pasts)  
+    res.send({"atualização feita":pert})
+  } else
+  res.send("Não foi achado: "+taskId)
   
-
-  res.send("atualização feita")
+  
 })
 
 // Delete task
 app.delete('/tasks/:id', async (req, res) => {
   const taskId = req.params.id
-  await tasks.destroy({ where: { id: taskId} })
-  res.send("foi deletado")
+  const tarefa = await tasks.findByPk(taskId)
+  if (tarefa){
+    await tasks.destroy({ where: { id: taskId} })
+ 
+    res.send("foi deletado")
+  } else
+  res.send("Não foi achada uma tarefa com o id: "+taskId)
+ 
 })
 
 app.listen(3000, () => {
